@@ -1,0 +1,13 @@
+{
+  "name": "myc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^18.15.5"
+  },
+  "scripts": {
+    "gen": "tsc && node random_gen.js"
+  }
+}
