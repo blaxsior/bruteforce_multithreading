@@ -7,6 +7,9 @@
 #include "timer.h" // 타이머
 #define LISTLEN 94
 
+// 연구 기반으로 빈도를 설정해도 괜찮을 듯?
+// https://www.researchgate.net/figure/Character-count-and-frequency-within-50-547-passwords-of-eight-characters-or-less_tbl4_357876614
+
 const char chlist[94] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                              'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
                              'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -21,22 +24,23 @@ const char chlist[94] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 // 전체 문자 94개 리스트
 
 /**
+* 입력받은 문자열에 대해 brute-force을 진행하는 함수
  * @param pc 프로세서가 지원하는 개수
  * @param size 문자 경우의 수
  * @param str 비교 대상이 되는 문자열
 */
 long long brute_force(const unsigned& pc, const long long& size, const std::string& str)
 {
-    std::cout << str << std::endl;
+    std::cout << str << " "; // 현재 비교 대상인 문자열
     const int length = str.length(); // 문자열의 길이
-    long long gap = size / pc; // 이 숫자만큼 연산 수행할 예정
-    std::vector<std::thread> thread_list;
-    bool find = false;
-    long long find_idx = -1;
+    //long long gap = size / pc; // 이 숫자만큼 연산 수행할 예정
+    std::vector<std::thread> thread_list; // 스레드 리스트
+    bool find = false; // 결과를 발견했는지 -> 스레드 for문 탈출 조건
+    long long find_idx = -1; // 발견한 인덱스 값.
 
     for (unsigned i = 0; i < pc; i++) // 환경이 가진 스레드 개수만큼 돌린다.
     {
-        // 스레드 추가
+        // 스레드 추가 ( 람다로 작업 시키기 )
         std::thread t([&find, &length, &pc, &str, &find_idx, &size](int sidx)
             {
                 for (long long idx = sidx; idx < size; idx+= pc) {
@@ -45,32 +49,42 @@ long long brute_force(const unsigned& pc, const long long& size, const std::stri
                     }
                     std::vector<char> fvec(length);
                     long long cur = idx; // 현재 인덱스 길이...
-
+                    bool cmp_check = true;
                     // 생성될 문자열 각 자리의 인덱스 처리
                     for (int j = 0; j < length; j++) {
-                        fvec[length - j - 1] = chlist[cur % LISTLEN];
+                        //fvec[length - j - 1] = chlist[cur % LISTLEN];
+                        if (chlist[cur % LISTLEN] != str[length - j - 1]) {
+                            cmp_check = false;
+                            break;
+                        }
                         cur /= LISTLEN;
                     }
-
-                    std::string result(fvec.begin(), fvec.end()); // 문자열 생성
-                    if (result.compare(str) == 0) {
-                        std::cout << "find[ " << result << " : " << idx << " ]\n"; // 찾았으면 위치 출력하고
+                    if (cmp_check) {
+                        std::cout << "find[ " << str << " : " << idx << " ] "; // 찾았으면 위치 출력하고
                         find_idx = idx; // 찾은 인덱스 얻기
-                        find = true;
+                        find = true; // 발견했으므로 모든 스레드 탈출
                     }
+                    //std::string result(fvec.begin(), fvec.end()); // 문자열 생성
+                    //if (result.compare(str) == 0) {
+
+                    //}
                 } }, i);
         thread_list.push_back(std::move(t));
     }
 
     for (auto& th : thread_list)
     {
-        th.join();
+        th.join(); // 모든 스레드 끝날때까지 대기하기
     }
 
     return find_idx;
 }
 /*
+* 문자열 길이와 비밀번호 리스트가 담긴 파일 이름을 입력받고,
+* 해당 비밀번호들에 대해 각각 브루트포스를 수행.
+* 파일 읽기, 시간 측정 등의 작업을 수행한다.
 * @param length 문자열 길이
+* @param path 비밀번호 파일 이름
 */
 void brute_force_all(const int &length, const std::string& path)
 {
@@ -94,7 +108,7 @@ void brute_force_all(const int &length, const std::string& path)
     MyTimer timer;
 
     int count = 0; // 현재 어디까지 진행했는지?
-    long long sum = 0; // 시간 초기화 용도
+    long long sum = 0; // 평균 시간 측정 용도
     std::string curstr;
     while (stream >> curstr)
     {
@@ -104,12 +118,12 @@ void brute_force_all(const int &length, const std::string& path)
             cout <<"case: "<< count <<"##########"<< '\n';
             sum = 0;
         }
-        timer.start();
+        timer.start(); // 작업 시작
 
         long long idx = brute_force(processor_count, full_size, curstr);
-        cout << "idx: "<<idx << endl;
-        timer.end();
-        std::cout << timer.getTimeLapse() << '\n';
+        
+        timer.end(); // 작업 끝
+        std::cout << timer.getTimeLapse() << std::endl;
         sum += timer.getTimeLapse();
         if (count % 10 == 0)
         {

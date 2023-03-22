@@ -23,12 +23,5 @@
 #include <iostream>
 int main() {
     brute_force_all(4,"password4.txt");
-    //MyTimer timer;
-
-    //timer.start();
-    //std::cout << "hello!" << std::endl;
-    //timer.end();
-    //std::cout << timer.getTimeLapse() << std::endl;
-
     return 0;
 }
