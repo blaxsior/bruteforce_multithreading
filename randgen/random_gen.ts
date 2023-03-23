@@ -29,6 +29,7 @@ function charCodeGenerator(chlist: [number,number][]) {
  * @param count 비밀번호의 길이. 4 ~ 8개로 지정하자.
  * @param chlist 입력하는 문자 배열
  * @param total_count 만드는 비밀번호의 개수. 기본 값은 10
+ * @returns 비밀번호 목록을 \n으로 이어 붙인 문자열
  */
 function randomPasswordGenerator(count: number, chlist: string[][], total_count: number = 10) {
     const retarr: string[] = [];

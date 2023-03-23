@@ -28,6 +28,7 @@ const char chlist[94] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
  * @param pc 프로세서가 지원하는 개수
  * @param size 문자 경우의 수
  * @param str 비교 대상이 되는 문자열
+ * @return 발견한 비밀번호의 인덱스(전체 경우의 수 기준)
 */
 long long brute_force(const unsigned& pc, const long long& size, const std::string& str)
 {
@@ -52,22 +53,25 @@ long long brute_force(const unsigned& pc, const long long& size, const std::stri
                     bool cmp_check = true;
                     // 생성될 문자열 각 자리의 인덱스 처리
                     for (int j = 0; j < length; j++) {
-                        //fvec[length - j - 1] = chlist[cur % LISTLEN];
-                        if (chlist[cur % LISTLEN] != str[length - j - 1]) {
-                            cmp_check = false;
-                            break;
-                        }
+                        fvec[length - j - 1] = chlist[cur % LISTLEN];
                         cur /= LISTLEN;
+                        //if (chlist[cur % LISTLEN] != str[length - j - 1]) {
+                        //    cmp_check = false;
+                        //    break;
+                        //}
+
                     }
-                    if (cmp_check) {
+                    //if (cmp_check) {
+                    //    std::cout << "find[ " << str << " : " << idx << " ] "; // 찾았으면 위치 출력하고
+                    //    find_idx = idx; // 찾은 인덱스 얻기
+                    //    find = true; // 발견했으므로 모든 스레드 탈출
+                    //}
+                    std::string result(fvec.begin(), fvec.end()); // 문자열 생성
+                    if (result.compare(str) == 0) {
                         std::cout << "find[ " << str << " : " << idx << " ] "; // 찾았으면 위치 출력하고
                         find_idx = idx; // 찾은 인덱스 얻기
                         find = true; // 발견했으므로 모든 스레드 탈출
                     }
-                    //std::string result(fvec.begin(), fvec.end()); // 문자열 생성
-                    //if (result.compare(str) == 0) {
-
-                    //}
                 } }, i);
         thread_list.push_back(std::move(t));
     }
