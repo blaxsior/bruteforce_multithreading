@@ -1,8 +1,8 @@
-import {appendFile} from 'fs/promises';
+import { appendFile, readFile } from 'fs/promises';
 
-const num_idxlist: [number,number][] = [[48,57]];
-const alpha_idxlist: [number,number][] = [[65,90],[97,122]];
-const special_idxlist: [number,number][] = [[33,47],[58,64],[91,96],[123,126]];
+const num_idxlist: [number, number][] = [[48, 57]];
+const alpha_idxlist: [number, number][] = [[65, 90], [97, 122]];
+const special_idxlist: [number, number][] = [[33, 47], [58, 64], [91, 96], [123, 126]];
 
 // 33 ~ 47, 58 ~ 64, 91 ~ 96, 123 ~ 126
 // 숫자 48 ~ 57
@@ -13,11 +13,11 @@ const special_idxlist: [number,number][] = [[33,47],[58,64],[91,96],[123,126]];
  * @param chlist [start,end] 배열
  * @returns 해당 구간에 대응되는 문자 목록
  */
-function charCodeGenerator(chlist: [number,number][]) {
+function charCodeGenerator(chlist: [number, number][]) {
     const retarr: string[] = [];
 
-    for(const [start, end] of chlist) {   
-        for(let num = start; num <= end; num++) {
+    for (const [start, end] of chlist) {
+        for (let num = start; num <= end; num++) {
             retarr.push(String.fromCharCode(num));
         }
     }
@@ -35,26 +35,26 @@ function randomPasswordGenerator(count: number, chlist: string[][], total_count:
     const retarr: string[] = [];
 
     const remained = count - chlist.length;
-    if(remained < 0) { // 해당하는 비밀번호가 성립할 수 없음.
+    if (remained < 0) { // 해당하는 비밀번호가 성립할 수 없음.
         return "";
     }
 
-    for(let c = 0; c < total_count; c++) {
+    for (let c = 0; c < total_count; c++) {
         const charr: string[] = [];
 
         for (const arr of chlist) { // 각 타입을 우선 하나씩 넣음.
-            charr.push(arr[Math.trunc(Math.random() * arr.length)]); 
+            charr.push(arr[Math.trunc(Math.random() * arr.length)]);
         }
-    
-        for(let i = 0; i < remained; i++) { // 남은 비밀번호 문자 채워넣기.
+
+        for (let i = 0; i < remained; i++) { // 남은 비밀번호 문자 채워넣기.
             const lidx = Math.trunc(Math.random() * chlist.length); // 리스트의 인덱스
             charr.push(chlist[lidx][Math.trunc(Math.random() * chlist[lidx].length)]);
         }
-    
+
         const password = charr.sort(() => Math.random() - 0.5).join(''); // 배열 한번 더 섞기.
         retarr.push(password);
     }
-   
+
     return retarr.join('\n') + '\n'; // 섞은거 문자열로 바꿔서 엔터키 붙여서 출력
 }
 
@@ -66,20 +66,35 @@ async function generate() {
     console.log(nl, nl.length);
     console.log(al, al.length);
     console.log(sl, sl.length);
-    for(let count = 4; count <= 8; count++) {
-        let pwstr="";
-        pwstr += randomPasswordGenerator(count,[nl]);
-        pwstr += randomPasswordGenerator(count,[al]);
-        pwstr += randomPasswordGenerator(count,[sl]);
-        pwstr += randomPasswordGenerator(count,[nl, al]);
-        pwstr += randomPasswordGenerator(count,[nl, sl]);
-        pwstr += randomPasswordGenerator(count,[al, sl]);
-        pwstr += randomPasswordGenerator(count,[nl,al,sl]);
+    for (let count = 4; count <= 8; count++) {
+        let pwstr = "";
+        pwstr += randomPasswordGenerator(count, [nl]);
+        pwstr += randomPasswordGenerator(count, [al]);
+        pwstr += randomPasswordGenerator(count, [sl]);
+        pwstr += randomPasswordGenerator(count, [nl, al]);
+        pwstr += randomPasswordGenerator(count, [nl, sl]);
+        pwstr += randomPasswordGenerator(count, [al, sl]);
+        pwstr += randomPasswordGenerator(count, [nl, al, sl]);
 
-        await appendFile(`password${count}.txt`, pwstr,{
+        await appendFile(`password${count}.txt`, pwstr, {
             encoding: 'utf-8'
         });
     }
 }
+/**
+ * 
+ * @param filenames 섞을 비밀번호가 담긴 파일 이름 목록
+ */
+async function passwordShuffle(filenames: string[]) {
+    const passwords: string[] = [];
+    for (const filename of filenames) {
+        const buffer = await readFile(filename, { encoding: 'utf-8' });
+        passwords.push(...buffer.trim().split('\n'));
+    }
+    passwords.sort(() => Math.random() - 0.5);
+    console.log(passwords);
+    await appendFile('shuffled_password.txt',passwords.join('\n'));
+}
 
-generate();
+// generate();
+passwordShuffle(['password4.txt', 'password5.txt', 'password6.txt', 'password7.txt', 'password8.txt']);

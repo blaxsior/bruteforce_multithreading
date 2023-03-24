@@ -68,7 +68,6 @@ long long brute_force(const unsigned& pc, const long long& size, const std::stri
                     //}
                     std::string result(fvec.begin(), fvec.end()); // 문자열 생성
                     if (result.compare(str) == 0) {
-                        std::cout << "find[ " << str << " : " << idx << " ] "; // 찾았으면 위치 출력하고
                         find_idx = idx; // 찾은 인덱스 얻기
                         find = true; // 발견했으므로 모든 스레드 탈출
                     }
@@ -89,30 +88,34 @@ long long brute_force(const unsigned& pc, const long long& size, const std::stri
 * 파일 읽기, 시간 측정 등의 작업을 수행한다.
 * @param length 문자열 길이
 * @param path 비밀번호 파일 이름
+* @param min_len 비밀번호의 최소 길이
+* @param max_len 비밀번호의 최대 길이
 */
-void brute_force_all(const int &length, const std::string& path)
+void brute_force_all(const std::string& path, const int& min_len = 4, const int& max_len = 8)
 {
     const auto processor_count = std::thread::hardware_concurrency();
     // 코어 개수 가져오기. 이거 기반으로 스레드 돌릴 예정.
 
-    if (length < 4 || length > 8)
+    if (min_len > max_len)
     {
         return; // 조건에 맞을때만 처리한다.
     }
 
     std::ifstream stream;
     stream.open(path, std::ios_base::in); // 읽기 모드로 오픈
-
-    long long full_size = 1; // 길이 지정하는 코드
-    for (unsigned i = 0; i < length; i++)
+    
+    long long default_size = 1; // 길이 지정하는 코드
+    for (unsigned i = 0; i < min_len; i++) // 최소 길이만큼 곱해둔다.
     {
-        full_size *= LISTLEN; // 나중에 하드코딩에서 바꿀 수 있음.
+        default_size *= LISTLEN; // 나중에 하드코딩에서 바꿀 수 있음.
     }
+    long long inner_size = default_size;
 
     MyTimer timer;
 
     int count = 0; // 현재 어디까지 진행했는지?
     long long sum = 0; // 평균 시간 측정 용도
+    int word_len = min_len;
     std::string curstr;
     while (stream >> curstr)
     {
@@ -123,11 +126,27 @@ void brute_force_all(const int &length, const std::string& path)
             sum = 0;
         }
         timer.start(); // 작업 시작
-
-        long long idx = brute_force(processor_count, full_size, curstr);
+        long long idx = -1;
+        while (idx < 0 && word_len <= max_len) {
+            idx = brute_force(processor_count, inner_size, curstr);
+            inner_size *= LISTLEN;
+            word_len++;
+        }
         
         timer.end(); // 작업 끝
-        std::cout << timer.getTimeLapse() << std::endl;
+        /*다음 단계를 위해 값 초기화*/
+        inner_size = default_size;
+        word_len = min_len;
+        /**/
+        if (idx >= 0) {
+            std::cout << "find[ " << curstr << " : "
+                << idx << " ] "
+                << timer.getTimeLapse() << std::endl; // 찾았으면 위치 출력하고
+        }
+        else {
+            std::cout << "cannot find " << curstr << std::endl;
+        }
+        
         sum += timer.getTimeLapse();
         if (count % 10 == 0)
         {

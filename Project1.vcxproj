@@ -145,6 +145,7 @@
     <ClCompile Include="timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\..\..\..\Desktop\codes\main\shuffled_password.txt" />
     <Text Include="password4.txt" />
     <Text Include="password5.txt" />
     <Text Include="password6.txt" />

@@ -38,6 +38,9 @@
     <Text Include="password8.txt">
       <Filter>소스 파일</Filter>
     </Text>
+    <Text Include="..\..\..\..\Desktop\codes\main\shuffled_password.txt">
+      <Filter>소스 파일</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="brute_force.h">

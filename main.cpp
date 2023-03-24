@@ -22,6 +22,6 @@
 #include "brute_force.h"
 #include <iostream>
 int main() {
-    brute_force_all(4,"password4.txt");
+    brute_force_all("password4.txt"); // 파일, 최소 길이, 최대 길이 변경 가능
     return 0;
 }

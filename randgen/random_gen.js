@@ -1,10 +1,15 @@
-import { appendFile } from 'fs/promises';
+import { appendFile, readFile } from 'fs/promises';
 const num_idxlist = [[48, 57]];
 const alpha_idxlist = [[65, 90], [97, 122]];
 const special_idxlist = [[33, 47], [58, 64], [91, 96], [123, 126]];
 // 33 ~ 47, 58 ~ 64, 91 ~ 96, 123 ~ 126
 // 숫자 48 ~ 57
 // 알파벳 65 ~ 90, 97 ~ 122
+/**
+ * 구간에 대응되는 문자 배열을 반환한다.
+ * @param chlist [start,end] 배열
+ * @returns 해당 구간에 대응되는 문자 목록
+ */
 function charCodeGenerator(chlist) {
     const retarr = [];
     for (const [start, end] of chlist) {
@@ -15,9 +20,11 @@ function charCodeGenerator(chlist) {
     return retarr;
 }
 /**
+ * 비밀번호 목록을 입력된 문자 배열 기반으로 랜덤으로 생성하고, '\n'으로 붙인 문자열을 반환한다.
  * @param count 비밀번호의 길이. 4 ~ 8개로 지정하자.
  * @param chlist 입력하는 문자 배열
  * @param total_count 만드는 비밀번호의 개수. 기본 값은 10
+ * @returns 비밀번호 목록을 \n으로 이어 붙인 문자열
  */
 function randomPasswordGenerator(count, chlist, total_count = 10) {
     const retarr = [];
@@ -61,4 +68,15 @@ async function generate() {
         });
     }
 }
-generate();
+async function passwordShuffle(filenames) {
+    const passwords = [];
+    for (const filename of filenames) {
+        const buffer = await readFile(filename, { encoding: 'utf-8' });
+        passwords.push(...buffer.trim().split('\n'));
+    }
+    passwords.sort(() => Math.random() - 0.5);
+    console.log(passwords);
+    await appendFile('shuffled_password.txt', passwords.join('\n'));
+}
+// generate();
+passwordShuffle(['password4.txt', 'password5.txt', 'password6.txt', 'password7.txt', 'password8.txt']);

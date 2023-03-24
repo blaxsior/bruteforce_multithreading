@@ -20,9 +20,6 @@ public:
         this->et = std::chrono::steady_clock::now();
     }
 
-    /**
-     * @return 밀리세컨드 단위의 시간 간격 (long long)
-    */
     auto getTimeLapse() {
         auto timelapse = std::chrono::duration_cast<std::chrono::milliseconds>(this->et - this->st).count();
         return timelapse;
